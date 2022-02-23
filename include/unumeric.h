@@ -11,29 +11,29 @@ namespace ustl {
 /// \ingroup NumericAlgorithms
 ///
 template <typename InputIterator, typename T>
-constexpr T accumulate (InputIterator first, InputIterator last, T init)
+inline T accumulate (InputIterator first, InputIterator last, T init)
 {
     while (first < last)
 	init += *first++;
-    return init;
+    return (init);
 }
 
 /// Returns the sum of all elements in [first, last) via \p op, added to \p init.
 /// \ingroup NumericAlgorithms
 ///
 template <typename InputIterator, typename T, typename BinaryFunction>
-constexpr T accumulate (InputIterator first, InputIterator last, T init, BinaryFunction binary_op)
+inline T accumulate (InputIterator first, InputIterator last, T init, BinaryFunction binary_op)
 {
     while (first < last)
 	init = binary_op (init, *first++);
-    return init;
+    return (init);
 }
 
 /// Assigns range [value, value + (last - first)) to [first, last)
 /// \ingroup NumericAlgorithms
 ///
 template <typename ForwardIterator, typename T>
-constexpr void iota (ForwardIterator first, ForwardIterator last, T value)
+inline void iota (ForwardIterator first, ForwardIterator last, T value)
 {
     while (first < last)
 	*first++ = value++;
@@ -43,11 +43,11 @@ constexpr void iota (ForwardIterator first, ForwardIterator last, T value)
 /// \ingroup NumericAlgorithms
 ///
 template <typename InputIterator1, typename InputIterator2, typename T>
-constexpr T inner_product (InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, T init)
+inline T inner_product (InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, T init)
 {
     while (first1 < last1)
 	init += *first1++ * *first2++;
-    return init;
+    return (init);
 }
 
 /// Returns the sum of products of respective elements in the given ranges.
@@ -55,65 +55,65 @@ constexpr T inner_product (InputIterator1 first1, InputIterator1 last1, InputIte
 ///
 template <typename InputIterator1, typename InputIterator2, typename T,
     	  typename BinaryOperation1, typename BinaryOperation2>
-constexpr T inner_product
+inline T inner_product
 (InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, T init,
  BinaryOperation1 sumOp, BinaryOperation2 productOp)
 {
     while (first1 < last1)
 	init = sumOp (init, productOp (*first1++, *first2++));
-    return init;
+    return (init);
 }
 
 /// Writes result such that result[i] = sum (first...first+i)
 /// \ingroup NumericAlgorithms
 ///
 template <typename InputIterator, typename OutputIterator>
-constexpr OutputIterator partial_sum (InputIterator first, InputIterator last, OutputIterator result)
+inline OutputIterator partial_sum (InputIterator first, InputIterator last, OutputIterator result)
 {
     if (first < last)
 	*result = *first++;
     while (first < last)
 	*++result = *first++ + *result;
-    return result;
+    return (result);
 }
 
 /// Writes result such that result[i] = sumOp (first...first+i)
 /// \ingroup NumericAlgorithms
 ///
 template <typename InputIterator, typename OutputIterator, typename BinaryOperation>
-constexpr OutputIterator partial_sum (InputIterator first, InputIterator last, OutputIterator result, BinaryOperation sumOp)
+inline OutputIterator partial_sum (InputIterator first, InputIterator last, OutputIterator result, BinaryOperation sumOp)
 {
     if (first < last)
 	*result = *first++;
     while (first < last)
 	*++result = sumOp (*first++, *result);
-    return result;
+    return (result);
 }
 
 /// Writes result such that result[i] = first[i] - first[i - 1]
 /// \ingroup NumericAlgorithms
 ///
 template <typename InputIterator, typename OutputIterator>
-constexpr OutputIterator adjacent_difference (InputIterator first, InputIterator last, OutputIterator result)
+inline OutputIterator adjacent_difference (InputIterator first, InputIterator last, OutputIterator result)
 {
     if (first < last)
 	*result++ = *first++;
     while (first < last)
 	*result++ = *first - *(first - 1);
-    return result;
+    return (result);
 }
 
 /// Writes result such that result[i] = differenceOp (first[i], first[i - 1])
 /// \ingroup NumericAlgorithms
 ///
 template <typename InputIterator, typename OutputIterator, typename BinaryOperation>
-constexpr OutputIterator adjacent_difference (InputIterator first, InputIterator last, OutputIterator result, BinaryOperation differenceOp)
+inline OutputIterator adjacent_difference (InputIterator first, InputIterator last, OutputIterator result, BinaryOperation differenceOp)
 {
     if (first < last)
 	*result++ = *first++;
     while (first < last)
 	*result++ = differenceOp (*first, *(first - 1));
-    return result;
+    return (result);
 }
 
 /// \brief Returns x^n.
@@ -121,7 +121,7 @@ constexpr OutputIterator adjacent_difference (InputIterator first, InputIterator
 /// \ingroup NumericAlgorithms
 ///
 template <typename T>
-constexpr T power (T x, unsigned n)
+inline T power (T x, unsigned n)
 {
     T result (n % 2 ? x : 1);
     while (n /= 2) {
@@ -129,7 +129,7 @@ constexpr T power (T x, unsigned n)
 	if (n % 2)
 	    result *= x;
     }
-    return result;
+    return (result);
 }
 
 /// \brief Returns x^n, using \p op instead of multiplication.
@@ -137,7 +137,7 @@ constexpr T power (T x, unsigned n)
 /// \ingroup NumericAlgorithms
 ///
 template <typename T, typename BinaryOperation>
-constexpr T power (T x, unsigned n, BinaryOperation op)
+inline T power (T x, unsigned n, BinaryOperation op)
 {
     T result (n % 2 ? x : 1);
     while (n /= 2) {
@@ -145,7 +145,7 @@ constexpr T power (T x, unsigned n, BinaryOperation op)
 	if (n % 2)
 	    result = op (result, x);
     }
-    return result;
+    return (result);
 }
 
 } // namespace ustl

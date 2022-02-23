@@ -15,25 +15,25 @@ namespace tm {
 // Type classes and type modifiers
 //----------------------------------------------------------------------
 
-using StdUnsignedInts = tl::Seq<unsigned char, unsigned short, unsigned, unsigned long>::Type ;
-using StdSignedInts = tl::Seq<signed char, short, int, long>::Type	;
-using StdOtherInts = tl::Seq<bool, char, wchar_t>::Type		;
-using StdFloats = tl::Seq<float, double>::Type			;
+typedef tl::Seq<unsigned char, unsigned short, unsigned, unsigned long>::Type
+							StdUnsignedInts;
+typedef tl::Seq<signed char, short, int, long>::Type	StdSignedInts;
+typedef tl::Seq<bool, char, wchar_t>::Type		StdOtherInts;
+typedef tl::Seq<float, double>::Type			StdFloats;
 
-template <typename U> struct Identity			{ using Result = U; };
-template <typename U> struct AddPointer			{ using Result = U*; };
-template <typename U> struct AddPointer<U&>		{ using Result = U*; };
-template <typename U> struct AddReference		{ using Result = U&; };
-template <typename U> struct AddReference<U&>		{ using Result = U&; };
-template <>           struct AddReference<void>		{ using Result = NullType; };
-template <typename U> struct AddParameterType		{ using Result = const U&; };
-template <typename U> struct AddParameterType<U&>	{ using Result = U&; };
-template <>           struct AddParameterType<void>	{ using Result = NullType; };
-template <typename U> struct RemoveReference		{ using Result = U; };
-template <typename U> struct RemoveReference<U&>	{ using Result = U; };
-template <typename U> struct RemoveReference<U&&>	{ using Result = U; };
-template <bool, typename T> struct EnableIf		{ using Result = void; };
-template <typename T> struct EnableIf<true, T>		{ using Result = T; };
+template <typename U> struct Identity			{ typedef U Result; };
+template <typename U> struct AddPointer			{ typedef U* Result; };
+template <typename U> struct AddPointer<U&>		{ typedef U* Result; };
+template <typename U> struct AddReference		{ typedef U& Result; };
+template <typename U> struct AddReference<U&>		{ typedef U& Result; };
+template <>           struct AddReference<void>		{ typedef NullType Result; };
+template <typename U> struct AddParameterType		{ typedef const U& Result; };
+template <typename U> struct AddParameterType<U&>	{ typedef U& Result; };
+template <>           struct AddParameterType<void>	{ typedef NullType Result; };
+template <typename U> struct RemoveReference		{ typedef U Result; };
+template <typename U> struct RemoveReference<U&>	{ typedef U Result; };
+template <bool, typename T> struct EnableIf		{ typedef void Result; };
+template <typename T> struct EnableIf<true, T>		{ typedef T Result; };
 
 
 //----------------------------------------------------------------------
@@ -176,35 +176,42 @@ class TypeTraits {
 private:
     #define TMTT1	template <typename U> struct
     #define TMTT2	template <typename U, typename V> struct
-    TMTT1 ReferenceTraits	{ enum { result = false, lvalue = true, rvalue = false }; using ReferredType = U; };
-    TMTT1 ReferenceTraits<U&>	{ enum { result = true,  lvalue = true, rvalue = false }; using ReferredType = U; };
-    TMTT1 PointerTraits		{ enum { result = false }; using PointeeType = NullType; };
-    TMTT1 PointerTraits<U*>	{ enum { result = true  }; using PointeeType = U; };
-    TMTT1 PointerTraits<U*&>	{ enum { result = true  }; using PointeeType = U; };
+    TMTT1 ReferenceTraits	{ enum { result = false, lvalue = true, rvalue = false }; typedef U ReferredType; };
+    TMTT1 ReferenceTraits<U&>	{ enum { result = true,  lvalue = true, rvalue = false }; typedef U ReferredType; };
+    TMTT1 PointerTraits		{ enum { result = false }; typedef NullType PointeeType; };
+    TMTT1 PointerTraits<U*>	{ enum { result = true  }; typedef U PointeeType; };
+    TMTT1 PointerTraits<U*&>	{ enum { result = true  }; typedef U PointeeType; };
     TMTT1 PToMTraits		{ enum { result = false }; };
     TMTT2 PToMTraits<U V::*>	{ enum { result = true  }; };
     TMTT2 PToMTraits<U V::*&>	{ enum { result = true  }; };
     TMTT1 FunctionPointerTraits	{ enum { result = IsFunctionPointerRaw<U>::result }; };
     TMTT1 PToMFunctionTraits	{ enum { result = IsMemberFunctionPointerRaw<U>::result }; };
-    TMTT1 UnConst		{ using Result = U;  enum { isConst = false }; };
-    TMTT1 UnConst<const U>	{ using Result = U;  enum { isConst = true  }; };
-    TMTT1 UnConst<const U&>	{ using Result = U&; enum { isConst = true  }; };
-    TMTT1 UnVolatile		{ using Result = U;  enum { isVolatile = false }; };
-    TMTT1 UnVolatile<volatile U>{ using Result = U;  enum { isVolatile = true  }; };
-    TMTT1 UnVolatile<volatile U&> {using Result = U&;enum { isVolatile = true  }; };
-    TMTT1 ReferenceTraits<U&&>	{ enum { result = true,  lvalue = false, rvalue = true }; using ReferredType = U; };
-    TMTT1 PointerTraits<U*&&>	{ enum { result = true  }; using PointeeType = U; };
+    TMTT1 UnConst		{ typedef U Result;  enum { isConst = false }; };
+    TMTT1 UnConst<const U>	{ typedef U Result;  enum { isConst = true  }; };
+    TMTT1 UnConst<const U&>	{ typedef U& Result; enum { isConst = true  }; };
+    TMTT1 UnVolatile		{ typedef U Result;  enum { isVolatile = false }; };
+    TMTT1 UnVolatile<volatile U>{ typedef U Result;  enum { isVolatile = true  }; };
+    TMTT1 UnVolatile<volatile U&> {typedef U& Result;enum { isVolatile = true  }; };
+#if HAVE_CPP11
+    TMTT1 ReferenceTraits<U&&>	{ enum { result = true,  lvalue = false, rvalue = true }; typedef U ReferredType; };
+    TMTT1 PointerTraits<U*&&>	{ enum { result = true  }; typedef U PointeeType; };
     TMTT2 PToMTraits<U V::*&&>	{ enum { result = true  }; };
-    TMTT1 UnConst<const U&&>	{ using Result = U&&; enum { isConst = true  }; };
-    TMTT1 UnVolatile<volatile U&&> {using Result = U&&;enum { isVolatile = true  }; };
+    TMTT1 UnConst<const U&&>	{ typedef U&& Result; enum { isConst = true  }; };
+    TMTT1 UnVolatile<volatile U&&> {typedef U&& Result;enum { isVolatile = true  }; };
+#endif
     #undef TMTT2
     #undef TMTT1
 public:
-    using NonConstType		= typename UnConst<T>::Result;
-    using NonVolatileType	= typename UnVolatile<T>::Result;
-    using UnqualifiedType	= typename UnVolatile<typename UnConst<T>::Result>::Result;
-    using PointeeType		= typename PointerTraits<UnqualifiedType>::PointeeType;
-    using ReferredType		= typename ReferenceTraits<T>::ReferredType;
+    typedef typename UnConst<T>::Result 
+	NonConstType;
+    typedef typename UnVolatile<T>::Result 
+	NonVolatileType;
+    typedef typename UnVolatile<typename UnConst<T>::Result>::Result 
+	UnqualifiedType;
+    typedef typename PointerTraits<UnqualifiedType>::PointeeType 
+	PointeeType;
+    typedef typename ReferenceTraits<T>::ReferredType 
+	ReferredType;
 
     enum { isConst		= UnConst<T>::isConst };
     enum { isVolatile		= UnVolatile<T>::isVolatile };
@@ -239,15 +246,15 @@ public:
     enum { isStdFundamental	= isStdArith || isStdFloat || Conversion<T, void>::sameType };
 	
     enum { isUnsignedInt	= isStdUnsignedInt };
-    enum { isUnsigned		= isUnsignedInt || isPointer };
     enum { isSignedInt		= isStdSignedInt };
     enum { isIntegral		= isStdIntegral || isUnsignedInt || isSignedInt };
     enum { isFloat		= isStdFloat };
-    enum { isSigned		= isSignedInt || isFloat };
     enum { isArith		= isIntegral || isFloat };
     enum { isFundamental	= isStdFundamental || isArith };
     
-    using ParameterType = typename Select<isStdArith || isPointer || isMemberPointer, T, typename AddParameterType<T>::Result>::Result ;
+    typedef typename Select<isStdArith || isPointer || isMemberPointer, T, 
+	    typename AddParameterType<T>::Result>::Result 
+	ParameterType;
 };
 
 } // namespace tm

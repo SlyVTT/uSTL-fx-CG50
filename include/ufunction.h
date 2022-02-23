@@ -15,24 +15,24 @@ namespace ustl {
 /// \ingroup FunctorObjects
 template <typename Result>
 struct void_function {
-    using result_type = Result;
+    typedef Result	result_type;
 };
 
 /// \brief \p Result f (\p Arg) function abstract interface.
 /// \ingroup FunctorObjects
 template <typename Arg, typename Result>
 struct unary_function {
-    using argument_type = Arg;
-    using result_type = Result;
+    typedef Arg		argument_type;
+    typedef Result	result_type;
 };
 
 /// \brief \p Result f (\p Arg1, \p Arg2) function abstract interface.
 /// \ingroup FunctorObjects
 template <typename Arg1, typename Arg2, typename Result>
 struct binary_function {
-    using first_argument_type = Arg1;
-    using second_argument_type = Arg2;
-    using result_type = Result;
+    typedef Arg1	first_argument_type;
+    typedef Arg2	second_argument_type;
+    typedef Result	result_type;
 };
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -73,12 +73,10 @@ STD_UNARY_FUNCTOR  (identity,		T,	(a))
 
 /// \brief Selects and returns the first argument.
 /// \ingroup FunctorObjects
-template <class T1, class T2> struct project1st	: public binary_function<T1,T2,T1>
-    { inline constexpr const T1& operator()(const T1& a, const T2&) const { return a; } };
+template <class T1, class T2> struct project1st	: public binary_function<T1,T2,T1>    { inline const T1& operator()(const T1& a, const T2&) const { return (a); } };
 /// \brief Selects and returns the second argument.
 /// \ingroup FunctorObjects
-template <class T1, class T2> struct project2nd	: public binary_function<T1,T2,T2>
-    { inline constexpr const T2& operator()(const T1&, const T2& a) const { return a; } };
+template <class T1, class T2> struct project2nd	: public binary_function<T1,T2,T2>    { inline const T2& operator()(const T1&, const T2& a) const { return (a); } };
 
 //----------------------------------------------------------------------
 // Generic function to functor converters.
@@ -90,14 +88,14 @@ template <class T1, class T2> struct project2nd	: public binary_function<T1,T2,T
 template <typename Arg, typename Result>
 class pointer_to_unary_function : public unary_function<Arg,Result> {
 public:
-    using argument_type = Arg;
-    using result_type = Result;
-    using pfunc_t = Result (*)(Arg);
+    typedef Arg		argument_type;
+    typedef Result	result_type;
+    typedef Result	(*pfunc_t)(Arg);
 public:
-    constexpr explicit	pointer_to_unary_function (pfunc_t pfn) : _pfn (pfn) {}
-    constexpr result_type operator() (argument_type v) const { return _pfn(v); }
+    explicit inline	pointer_to_unary_function (pfunc_t pfn) : m_pfn (pfn) {}
+    inline result_type	operator() (argument_type v) const { return (m_pfn(v)); }
 private:
-    pfunc_t		_pfn;	///< Pointer to the wrapped function.
+    pfunc_t		m_pfn;	///< Pointer to the wrapped function.
 };
 
 /// \brief Wrapper object for binary function pointers.
@@ -106,31 +104,31 @@ private:
 template <typename Arg1, typename Arg2, typename Result>
 class pointer_to_binary_function : public binary_function<Arg1,Arg2,Result> {
 public:
-    using first_argument_type = Arg1;
-    using second_argument_type = Arg2;
-    using result_type = Result;
-    using pfunc_t = Result (*)(Arg1, Arg2);
+    typedef Arg1	first_argument_type;
+    typedef Arg2	second_argument_type;
+    typedef Result	result_type;
+    typedef Result	(*pfunc_t)(Arg1, Arg2);
 public:
-    constexpr explicit	pointer_to_binary_function (pfunc_t pfn) : _pfn (pfn) {}
-    constexpr result_type operator() (first_argument_type v1, second_argument_type v2) const { return _pfn(v1, v2); }
+    explicit inline	pointer_to_binary_function (pfunc_t pfn) : m_pfn (pfn) {}
+    inline result_type	operator() (first_argument_type v1, second_argument_type v2) const { return (m_pfn(v1, v2)); }
 private:
-    pfunc_t		_pfn;	///< Pointer to the wrapped function.
+    pfunc_t		m_pfn;	///< Pointer to the wrapped function.
 };
 
 /// ptr_fun(pfn) wraps function pointer pfn into a functor class that calls it.
 /// \ingroup FunctorAccessors
 template <typename Arg, typename Result>
-constexpr pointer_to_unary_function<Arg,Result> ptr_fun (Result (*pfn)(Arg))
+inline pointer_to_unary_function<Arg,Result> ptr_fun (Result (*pfn)(Arg))
 {
-    return pointer_to_unary_function<Arg,Result> (pfn);
+    return (pointer_to_unary_function<Arg,Result> (pfn));
 }
 
 /// ptr_fun(pfn) wraps function pointer pfn into a functor class that calls it.
 /// \ingroup FunctorAccessors
 template <typename Arg1, typename Arg2, typename Result>
-constexpr pointer_to_binary_function<Arg1,Arg2,Result> ptr_fun (Result (*pfn)(Arg1,Arg2))
+inline pointer_to_binary_function<Arg1,Arg2,Result> ptr_fun (Result (*pfn)(Arg1,Arg2))
 {
-    return pointer_to_binary_function<Arg1,Arg2,Result> (pfn);
+    return (pointer_to_binary_function<Arg1,Arg2,Result> (pfn));
 }
 
 //----------------------------------------------------------------------
@@ -144,21 +142,21 @@ template <class UnaryFunction>
 class unary_negate : public unary_function<typename UnaryFunction::argument_type,
 					   typename UnaryFunction::result_type> {
 public:
-    using argument_type = typename UnaryFunction::argument_type;
-    using result_type = typename UnaryFunction::result_type;
+    typedef typename UnaryFunction::argument_type	argument_type;
+    typedef typename UnaryFunction::result_type		result_type;
 public:
-    constexpr explicit	unary_negate (UnaryFunction pfn) : _pfn (pfn) {}
-    constexpr result_type operator() (argument_type v) const { return !_pfn(v); }
+    explicit inline unary_negate (UnaryFunction pfn) : m_pfn (pfn) {}
+    inline result_type operator() (argument_type v) const { return (!m_pfn(v)); }
 private:
-    UnaryFunction	_pfn;
+    UnaryFunction	m_pfn;
 };
 
 /// Returns the functor that negates the result of *pfn().
 /// \ingroup FunctorAccessors
 template <class UnaryFunction>
-inline constexpr unary_negate<UnaryFunction> unary_negator (UnaryFunction pfn)
+inline unary_negate<UnaryFunction> unary_negator (UnaryFunction pfn)
 {
-    return unary_negate<UnaryFunction>(pfn);
+    return (unary_negate<UnaryFunction>(pfn));
 }
 
 //----------------------------------------------------------------------
@@ -173,15 +171,15 @@ template <class BinaryFunction>
 class binder1st : public unary_function<typename BinaryFunction::second_argument_type,
 					typename BinaryFunction::result_type> {
 public:
-    using arg1_t = typename BinaryFunction::first_argument_type;
-    using arg2_t = typename BinaryFunction::second_argument_type;
-    using result_t = typename BinaryFunction::result_type;
+    typedef typename BinaryFunction::first_argument_type	arg1_t;
+    typedef typename BinaryFunction::second_argument_type	arg2_t;
+    typedef typename BinaryFunction::result_type		result_t;
 public:
-    constexpr binder1st (const BinaryFunction& pfn, const arg1_t& v) : _pfn (pfn), _v(v) {}
-    constexpr result_t operator()(arg2_t v2) const { return _pfn (_v, v2); }
+    inline binder1st (const BinaryFunction& pfn, const arg1_t& v) : m_pfn (pfn), m_Value(v) {}
+    inline result_t operator()(arg2_t v2) const { return (m_pfn (m_Value, v2)); }
 protected:
-    BinaryFunction	_pfn;
-    arg1_t		_v;
+    BinaryFunction	m_pfn;
+    arg1_t		m_Value;
 };
 
 /// \brief Converts a binary function to a unary function
@@ -192,33 +190,33 @@ template <class BinaryFunction>
 class binder2nd : public unary_function<typename BinaryFunction::first_argument_type,
 					typename BinaryFunction::result_type> {
 public:
-    using arg1_t = typename BinaryFunction::first_argument_type;
-    using arg2_t = typename BinaryFunction::second_argument_type;
-    using result_t = typename BinaryFunction::result_type;
+    typedef typename BinaryFunction::first_argument_type	arg1_t;
+    typedef typename BinaryFunction::second_argument_type	arg2_t;
+    typedef typename BinaryFunction::result_type		result_t;
 public:
-    constexpr binder2nd (const BinaryFunction& pfn, const arg2_t& v) : _pfn (pfn), _v(v) {}
-    constexpr result_t operator()(arg1_t v1) const { return _pfn (v1, _v); }
+    inline binder2nd (const BinaryFunction& pfn, const arg2_t& v) : m_pfn (pfn), m_Value(v) {}
+    inline result_t operator()(arg1_t v1) const { return (m_pfn (v1, m_Value)); }
 protected:
-    BinaryFunction	_pfn;
-    arg2_t		_v;
+    BinaryFunction	m_pfn;
+    arg2_t		m_Value;
 };
 
 /// Converts \p pfn into a unary function by binding the first argument to \p v.
 /// \ingroup FunctorAccessors
 template <typename BinaryFunction>
-constexpr binder1st<BinaryFunction>
+inline binder1st<BinaryFunction>
 bind1st (BinaryFunction pfn, typename BinaryFunction::first_argument_type v) 
 {
-    return binder1st<BinaryFunction> (pfn, v);
+    return (binder1st<BinaryFunction> (pfn, v));
 }
 
 /// Converts \p pfn into a unary function by binding the second argument to \p v.
 /// \ingroup FunctorAccessors
 template <typename BinaryFunction>
-constexpr binder2nd<BinaryFunction>
+inline binder2nd<BinaryFunction>
 bind2nd (BinaryFunction pfn, typename BinaryFunction::second_argument_type v) 
 {
-    return binder2nd<BinaryFunction> (pfn, v);
+    return (binder2nd<BinaryFunction> (pfn, v));
 }
 
 //----------------------------------------------------------------------
@@ -236,21 +234,21 @@ template <typename Operation1, typename Operation2>
 class unary_compose : public unary_function<typename Operation2::argument_type,
 					    typename Operation1::result_type> {
 public:
-    using arg_t = typename Operation2::argument_type;
-    using rcarg_t = const arg_t&;
-    using result_t = typename Operation1::result_type;
+    typedef typename Operation2::argument_type	arg_t;
+    typedef const arg_t&			rcarg_t;
+    typedef typename Operation1::result_type	result_t;
 public:
-    constexpr unary_compose (const Operation1& f, const Operation2& g) : _f(f), _g(g) {}
-    constexpr result_t operator() (rcarg_t x) const { return _f(_g(x)); }
+    inline unary_compose (const Operation1& f, const Operation2& g) : m_f(f), m_g(g) {}
+    inline result_t operator() (rcarg_t x) const { return m_f(m_g(x)); }
 protected:
-    Operation1	_f;	///< f(x), if c(x) = f(g(x))
-    Operation2	_g;	///< g(x), if c(x) = f(g(x))
+    Operation1	m_f;	///< f(x), if c(x) = f(g(x))
+    Operation2	m_g;	///< g(x), if c(x) = f(g(x))
 };
 
 /// Creates a \ref unary_compose object whose function c(x)=f(g(x))
 /// \ingroup FunctorAccessors
 template <typename Operation1, typename Operation2>
-constexpr unary_compose<Operation1, Operation2>
+inline unary_compose<Operation1, Operation2>
 compose1 (const Operation1& f, const Operation2& g)
 { return unary_compose<Operation1,Operation2>(f, g); }
 
@@ -265,22 +263,22 @@ template <typename Operation1, typename Operation2, typename Operation3>
 class binary_compose : public unary_function<typename Operation2::argument_type,
 					    typename Operation1::result_type> {
 public:
-    using arg_t = typename Operation2::argument_type;
-    using rcarg_t = const arg_t&;
-    using result_t = typename Operation1::result_type;
+    typedef typename Operation2::argument_type	arg_t;
+    typedef const arg_t&			rcarg_t;
+    typedef typename Operation1::result_type	result_t;
 public:
-    constexpr binary_compose (const Operation1& f, const Operation2& g, const Operation3& h) : _f(f), _g(g), _h(h) {}
-    constexpr result_t operator() (rcarg_t x) const { return _f(_g(x), _h(x)); }
+    inline binary_compose (const Operation1& f, const Operation2& g, const Operation3& h) : m_f(f), m_g(g), m_h(h) {}
+    inline result_t operator() (rcarg_t x) const { return m_f(m_g(x), m_h(x)); }
 protected:
-    Operation1	_f;	///< f(x,y), if c(x) = f(g(x),h(x))
-    Operation2	_g;	///< g(x), if c(x) = f(g(x),h(x))
-    Operation3	_h;	///< h(x), if c(x) = f(g(x),h(x))
+    Operation1	m_f;	///< f(x,y), if c(x) = f(g(x),h(x))
+    Operation2	m_g;	///< g(x), if c(x) = f(g(x),h(x))
+    Operation3	m_h;	///< h(x), if c(x) = f(g(x),h(x))
 };
 
 /// Creates a \ref binary_compose object whose function c(x)=f(g(x),h(x))
 /// \ingroup FunctorAccessors
 template <typename Operation1, typename Operation2, typename Operation3>
-constexpr binary_compose<Operation1, Operation2, Operation3>
+inline binary_compose<Operation1, Operation2, Operation3>
 compose2 (const Operation1& f, const Operation2& g, const Operation3& h)
 { return binary_compose<Operation1, Operation2, Operation3> (f, g, h); }
 
@@ -290,22 +288,22 @@ compose2 (const Operation1& f, const Operation2& g, const Operation3& h)
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#define MEM_FUN_T(WrapperName, ClassName, ArgType, FuncType, CallType)		\
-    template <typename Ret, class T>						\
-    class ClassName : public unary_function<ArgType,Ret> {			\
-    public:									\
-	using func_t = Ret (T::*) FuncType;					\
-    public:									\
-	constexpr explicit ClassName (func_t pf) : _pf (pf) {}			\
-	constexpr Ret operator() (ArgType p) const { return (p CallType _pf)(); }\
-    private:									\
-	func_t	_pf;								\
+#define MEM_FUN_T(WrapperName, ClassName, ArgType, FuncType, CallType)				\
+    template <typename Ret, class T>								\
+    class ClassName : public unary_function<ArgType,Ret> {					\
+    public:											\
+	typedef Ret (T::*func_t) FuncType;							\
+    public:											\
+	explicit inline	ClassName (func_t pf) : m_pf (pf) {}					\
+	inline Ret	operator() (ArgType p) const { return ((p CallType m_pf)()); }		\
+    private:											\
+	func_t	m_pf;										\
     };	\
 	\
     template <class Ret, typename T>		\
-    constexpr ClassName<Ret,T> WrapperName (Ret (T::*pf) FuncType)	\
+    inline ClassName<Ret,T> WrapperName (Ret (T::*pf) FuncType)	\
     {						\
-	return ClassName<Ret,T> (pf);		\
+	return (ClassName<Ret,T> (pf));		\
     }
 
 MEM_FUN_T(mem_fun,	mem_fun_t, 		T*,		(void),		->*)
@@ -317,19 +315,19 @@ MEM_FUN_T(mem_fun_ref,	const_mem_fun_ref_t, 	const T&,	(void) const,	.*)
     template <class T, typename Ret, typename V> \
     class ClassName : public unary_function<V,void> { \
     public: \
-	using func_t = Ret (T::*)(V) FuncType; \
+	typedef Ret (T::*func_t)(V) FuncType; \
     public: \
-	constexpr	ClassName (HostType t, func_t pf) : _t (t), _pf (pf) {} \
-	constexpr Ret	operator() (V v) const { return (_t->*_pf)(v); } \
+	inline		ClassName (HostType t, func_t pf) : m_t (t), m_pf (pf) {} \
+	inline Ret	operator() (V v) const { return ((m_t->*m_pf)(v)); } \
     private: \
-	HostType	_t; \
-	func_t		_pf; \
+	HostType	m_t; \
+	func_t		m_pf; \
     };	\
 	\
     template <class T, typename Ret, typename V>					\
-    constexpr ClassName<T,Ret,V> mem_fun (HostType p, Ret (T::*pf)(V) FuncType)	\
+    inline ClassName<T,Ret,V> mem_fun (HostType p, Ret (T::*pf)(V) FuncType)	\
     {											\
-	return ClassName<T,Ret,V> (p, pf);						\
+	return (ClassName<T,Ret,V> (p, pf));						\
     }
 
 EXT_MEM_FUN_T(ext_mem_fun_t,		T*,		)
@@ -347,31 +345,31 @@ EXT_MEM_FUN_T(const_ext_mem_fun_t,	const T*,	const)
     template <typename Function, class T, typename VT>					\
     class FunctorName##_t : public BaseClass {						\
     public:										\
-	using argument_type = ArgType;							\
-	using result_type = typename Function::result_type;				\
-	using mem_var_ptr_t = VarType;							\
+	typedef ArgType				argument_type;				\
+	typedef typename Function::result_type	result_type;				\
+	typedef VarType				mem_var_ptr_t;				\
     public:										\
-	constexpr FunctorName##_t (mem_var_ptr_t pv, Function pfn) : _pv(pv), _pfn(pfn) {}	\
-	constexpr result_type operator() CallImpl						\
+	inline FunctorName##_t (mem_var_ptr_t pv, Function pfn) : m_pv(pv), m_pfn(pfn) {}	\
+	inline result_type operator() CallImpl						\
     private:										\
-	mem_var_ptr_t	_pv;								\
-	Function	_pfn;								\
+	mem_var_ptr_t	m_pv;								\
+	Function	m_pfn;								\
     };											\
 											\
     template <typename Function, class T, typename VT>					\
-    constexpr FunctorName##_t<Function, T, VT>						\
+    inline FunctorName##_t<Function, T, VT>						\
     FunctorName (VT T::*mvp, Function pfn)						\
     {											\
-	return FunctorName##_t<Function,T,VT> (mvp, pfn);				\
+	return (FunctorName##_t<Function,T,VT> (mvp, pfn));				\
     }
 
 #define FUNCTOR_UNARY_BASE(ArgType)	unary_function<ArgType, typename Function::result_type>
 #define FUNCTOR_BINARY_BASE(ArgType)	binary_function<ArgType, ArgType, typename Function::result_type>
 
 #define MEM_VAR_UNARY_ARGS		(argument_type p) const \
-					{ return _pfn(p.*_pv); }
+					{ return (m_pfn(p.*m_pv)); }
 #define MEM_VAR_BINARY_ARGS		(argument_type p1, argument_type p2) const \
-					{ return _pfn(p1.*_pv, p2.*_pv); }
+					{ return (m_pfn(p1.*m_pv, p2.*m_pv)); }
 
 MEM_VAR_T(mem_var1,		T&, VT T::*,		FUNCTOR_UNARY_BASE(T&),  MEM_VAR_UNARY_ARGS)
 MEM_VAR_T(const_mem_var1, const T&, const VT T::*,	FUNCTOR_UNARY_BASE(T&),  MEM_VAR_UNARY_ARGS)
@@ -386,37 +384,37 @@ MEM_VAR_T(const_mem_var2, const T&, const VT T::*,	FUNCTOR_BINARY_BASE(T&), MEM_
 /// Returned functor passes member variable \p mvp reference of given object to equal\<VT\>.
 /// \ingroup FunctorAccessors
 template <class T, typename VT>
-constexpr const_mem_var1_t<binder2nd<equal_to<VT> >, T, VT>
+inline const_mem_var1_t<binder2nd<equal_to<VT> >, T, VT>
 mem_var_equal_to (const VT T::*mvp, const VT& v)
 {
-    return const_mem_var1_t<binder2nd<equal_to<VT> >,T,VT> (mvp, bind2nd(equal_to<VT>(), v));
+    return (const_mem_var1_t<binder2nd<equal_to<VT> >,T,VT> (mvp, bind2nd(equal_to<VT>(), v)));
 }
 
 /// Returned functor passes member variable \p mvp reference of given object to less\<VT\>.
 /// \ingroup FunctorAccessors
 template <class T, typename VT>
-constexpr const_mem_var1_t<binder2nd<less<VT> >, T, VT>
+inline const_mem_var1_t<binder2nd<less<VT> >, T, VT>
 mem_var_less (const VT T::*mvp, const VT& v)
 {
-    return const_mem_var1_t<binder2nd<less<VT> >,T,VT> (mvp, bind2nd(less<VT>(), v));
+    return (const_mem_var1_t<binder2nd<less<VT> >,T,VT> (mvp, bind2nd(less<VT>(), v)));
 }
 
 /// Returned functor passes member variable \p mvp reference of given object to equal\<VT\>.
 /// \ingroup FunctorAccessors
 template <class T, typename VT>
-constexpr const_mem_var2_t<equal_to<VT>, T, VT>
+inline const_mem_var2_t<equal_to<VT>, T, VT>
 mem_var_equal_to (const VT T::*mvp)
 {
-    return const_mem_var2_t<equal_to<VT>,T,VT> (mvp, equal_to<VT>());
+    return (const_mem_var2_t<equal_to<VT>,T,VT> (mvp, equal_to<VT>()));
 }
 
 /// Returned functor passes member variable \p mvp reference of given object to less\<VT\>.
 /// \ingroup FunctorAccessors
 template <class T, typename VT>
-constexpr const_mem_var2_t<less<VT>, T, VT>
+inline const_mem_var2_t<less<VT>, T, VT>
 mem_var_less (const VT T::*mvp)
 {
-    return const_mem_var2_t<less<VT>,T,VT> (mvp, less<VT>());
+    return (const_mem_var2_t<less<VT>,T,VT> (mvp, less<VT>()));
 }
 
 //----------------------------------------------------------------------
@@ -429,25 +427,25 @@ mem_var_less (const VT T::*mvp)
     template <typename T, typename Function>					\
     class ClassName : public BaseClass {					\
     public:									\
-	using argument_type = ArgType*;						\
-	using result_type = typename Function::result_type;			\
+	typedef ArgType*			argument_type;			\
+	typedef typename Function::result_type	result_type;			\
     public:									\
-	constexpr		ClassName (Function pfn) : _pfn (pfn) {}	\
-	constexpr result_type	operator() CallImpl				\
+	inline			ClassName (Function pfn) : m_pfn (pfn) {}	\
+	inline result_type	operator() CallImpl				\
     private:									\
-	Function		_pfn;						\
+	Function		m_pfn;						\
     };										\
 										\
     template <typename T, typename Function>					\
-    constexpr ClassName<T,Function> _dereference (Function pfn, FunctorKey)	\
+    inline ClassName<T,Function> _dereference (Function pfn, FunctorKey)	\
     {										\
-	return ClassName<T,Function> (pfn);					\
+	return (ClassName<T,Function> (pfn));					\
     }
 
 #define DEREF_UNARY_ARGS		(argument_type p) const \
-					{ return _pfn(*p); }
+					{ return (m_pfn(*p)); }
 #define DEREF_BINARY_ARGS		(argument_type p1, argument_type p2) const \
-					{ return _pfn(*p1, *p2); }
+					{ return (m_pfn(*p1, *p2)); }
 
 DEREFERENCER_T(deref1_t,	T, 		FUNCTOR_UNARY_BASE(T*),		DEREF_UNARY_ARGS,	FUNCTOR_UNARY_BASE(T))
 DEREFERENCER_T(const_deref1_t,	const T, 	FUNCTOR_UNARY_BASE(const T*),	DEREF_UNARY_ARGS,	FUNCTOR_UNARY_BASE(const T))

@@ -5,11 +5,10 @@
 
 #pragma once
 #include "memlink.h"
-#include "uexception.h"
 #include "utf8.h"
 #include "uios.h"
 #include "strmsize.h"
-#if WANT_BSTREAM_EXCEPTIONS
+#if WANT_STREAM_BOUNDS_CHECKING
     #include "typeinfo.h"
 #endif
 
@@ -50,23 +49,21 @@ class string;
 ///
 class ostream : public memlink, public ios_base {
 public:
-    constexpr		ostream (void)			: memlink(), _pos(0) {}
-    constexpr		ostream (void* p, streamsize n)	: memlink (p, n), _pos (0) {}
-    constexpr explicit	ostream (const memlink& source)	: memlink (source), _pos (0) {}
-    constexpr iterator	end (void)			{ return memlink::end(); }
-    constexpr const_iterator end (void) const		{ return memlink::end(); }
+    inline		ostream (void);
+    inline		ostream (void* p, streamsize n);
+    inline explicit	ostream (const memlink& source);
+    inline iterator	end (void)		{ return (memlink::end()); }
+    inline const_iterator end (void) const	{ return (memlink::end()); }
     inline void		seek (uoff_t newPos);
     inline void		iseek (const_iterator newPos);
     inline void		skip (streamsize nBytes);
-    constexpr uoff_t	pos (void) const		{ return _pos; }
-    constexpr iterator	ipos (void)			{ return begin() + pos(); }
-    constexpr const_iterator ipos (void) const		{ return begin() + pos(); }
-    constexpr streamsize remaining (void) const		{ return size() - pos(); }
-    constexpr bool	aligned (streamsize grain = c_DefaultAlignment) const
-			    { return pos() % grain == 0; }
-    constexpr streamsize align_size (streamsize grain = c_DefaultAlignment) const
-			    { return Align (pos(), grain) - pos(); }
+    inline uoff_t	pos (void) const	{ return (m_Pos); }
+    inline iterator	ipos (void)		{ return (begin() + pos()); }
+    inline const_iterator ipos (void) const	{ return (begin() + pos()); }
+    inline streamsize	remaining (void) const;
+    inline bool		aligned (streamsize grain = c_DefaultAlignment) const;
     bool		verify_remaining (const char* op, const char* type, size_t n);
+    inline streamsize	align_size (streamsize grain = c_DefaultAlignment) const;
     void		align (streamsize grain = c_DefaultAlignment);
     inline void		write (const void* buffer, streamsize size);
     inline void		write (const cmemlink& buf);
@@ -74,26 +71,25 @@ public:
     void		read (istream& is);
     inline void		write (ostream& os) const	{ os.write (begin(), pos()); }
     void		text_write (ostringstream& os) const;
-    constexpr size_t	stream_size (void) const	{ return pos(); }
+    inline size_t	stream_size (void) const	{ return (pos()); }
     void		insert (iterator start, streamsize size);
     void		erase (iterator start, streamsize size);
-    constexpr void	swap (ostream& os)		{ memlink::swap (os); ::ustl::swap (_pos, os._pos); }
+    inline void		swap (ostream& os);
     template <typename T>
     inline void		iwrite (const T& v);
-    virtual ostream&	flush (void)			{ return *this; }
-    virtual streamsize	overflow (streamsize=1)		{ return remaining(); }
-    virtual void	unlink (void) noexcept override;
+    inline virtual streamsize	overflow (streamsize = 1){ return (remaining()); }
+    virtual void	unlink (void) noexcept;
     inline void		link (void* p, streamsize n)	{ memlink::link (p, n); }
     inline void		link (memlink& l)		{ memlink::link (l.data(), l.writable_size()); }
     inline void		link (void* f, void* l)		{ memlink::link (f, l); }
-    constexpr void	relink (void* p, streamsize n)	{ memlink::relink (p, n); _pos = 0; }
-    constexpr void	relink (memlink& l)		{ relink (l.data(), l.writable_size()); }
+    inline void		relink (void* p, streamsize n)	{ memlink::relink (p, n); m_Pos = 0; }
+    inline void		relink (memlink& l)		{ relink (l.data(), l.writable_size()); }
     inline void		seekp (off_t p, seekdir d = beg);
-    constexpr off_t	tellp (void) const		{ return pos(); }
+    inline off_t	tellp (void) const		{ return (pos()); }
 protected:
-    constexpr void	SetPos (uoff_t newPos)		{ _pos = newPos; }
+    inline void		SetPos (uoff_t newPos)		{ m_Pos = newPos; }
 private:
-    streamoff		_pos;	///< Current write position.
+    streamoff		m_Pos;	///< Current write position.
 };
 
 //----------------------------------------------------------------------
@@ -106,45 +102,68 @@ private:
 template <typename T, typename Stream = ostream>
 class ostream_iterator {
 public:
-    using value_type		= T;
-    using difference_type	= ptrdiff_t;
-    using pointer		= value_type*;
-    using reference		= value_type&;
-    using size_type		= typename Stream::size_type;
-    using iterator_category	= output_iterator_tag;
+    typedef T			value_type;
+    typedef ptrdiff_t		difference_type;
+    typedef value_type*		pointer;
+    typedef value_type&		reference;
+    typedef typename Stream::size_type	size_type;
 public:
-    constexpr explicit		ostream_iterator (Stream& os)
-				    : _os (os) {}
-    constexpr			ostream_iterator (const ostream_iterator& iter)
-				    : _os (iter._os) {}
+    inline explicit		ostream_iterator (Stream& os)
+				    : m_Os (os) {}
+    inline			ostream_iterator (const ostream_iterator& iter)
+				    : m_Os (iter.m_Os) {} 
     /// Writes \p v into the stream.
     inline ostream_iterator&	operator= (const T& v)
-				    { _os << v; return *this; }
-    constexpr ostream_iterator&	operator* (void) { return *this; }
-    constexpr ostream_iterator&	operator++ (void) { return *this; }
-    constexpr ostream_iterator	operator++ (int) { return *this; }
-    inline ostream_iterator&	operator+= (streamsize n) { _os.skip (n); return *this; }
-    constexpr bool		operator== (const ostream_iterator& i) const
-				    { return _os.pos() == i._os.pos(); }
-    constexpr bool		operator< (const ostream_iterator& i) const
-				    { return _os.pos() < i._os.pos(); }
+				    { m_Os << v; return (*this); }
+    inline ostream_iterator&	operator* (void) { return (*this); }
+    inline ostream_iterator&	operator++ (void) { return (*this); }
+    inline ostream_iterator	operator++ (int) { return (*this); }
+    inline ostream_iterator&	operator+= (streamsize n) { m_Os.skip (n); return (*this); }
+    inline bool			operator== (const ostream_iterator& i) const
+				    { return (m_Os.pos() == i.m_Os.pos()); }
+    inline bool			operator< (const ostream_iterator& i) const
+				    { return (m_Os.pos() < i.m_Os.pos()); }
 private:
-    Stream&	_os;
+    Stream&	m_Os;
 };
 
 //----------------------------------------------------------------------
 
-using ostream_iterator_for_utf8 = ostream_iterator<utf8subchar_t>;
-using utf8ostream_iterator = utf8out_iterator<ostream_iterator_for_utf8>;
+typedef ostream_iterator<utf8subchar_t> ostream_iterator_for_utf8;
+typedef utf8out_iterator<ostream_iterator_for_utf8> utf8ostream_iterator;
 
 /// Returns a UTF-8 adaptor writing to \p os.
 inline utf8ostream_iterator utf8out (ostream& os)
 {
     ostream_iterator_for_utf8 si (os);
-    return utf8ostream_iterator (si);
+    return (utf8ostream_iterator (si));
 }
 
 //----------------------------------------------------------------------
+
+/// \brief Constructs a stream attached to nothing.
+/// A stream attached to nothing is not usable. Call Link() functions
+/// inherited from memlink to attach to some memory block.
+///
+inline ostream::ostream (void)
+: memlink (),
+  m_Pos (0)
+{
+}
+
+/// Attaches the stream to a block at \p p of size \p n.
+inline ostream::ostream (void* p, streamsize n)
+: memlink (p, n),
+  m_Pos (0)
+{
+}
+
+/// Attaches to the block pointed to by \p source.
+inline ostream::ostream (const memlink& source)
+: memlink (source),
+  m_Pos (0)
+{
+}
 
 /// Checks that \p n bytes are available in the stream, or else throws.
 inline bool ostream::verify_remaining (const char* op, const char* type, size_t n)
@@ -152,15 +171,15 @@ inline bool ostream::verify_remaining (const char* op, const char* type, size_t 
     const size_t rem = remaining();
     bool enough = n <= rem;
     if (!enough) overrun (op, type, n, pos(), rem);
-    return enough;
+    return (enough);
 }
 
 /// Move the write pointer to \p newPos
 inline void ostream::seek (uoff_t newPos)
 {
-#if WANT_BSTREAM_EXCEPTIONS
+#if WANT_STREAM_BOUNDS_CHECKING
     if (newPos > size())
-	return overrun ("seekp", "byte", newPos, pos(), size());
+	return;
 #else
     assert (newPos <= size());
 #endif
@@ -189,17 +208,36 @@ inline void ostream::skip (streamsize nBytes)
     seek (pos() + nBytes);
 }
 
+/// Returns number of bytes remaining in the write buffer.
+inline streamsize ostream::remaining (void) const
+{
+    return (size() - pos());
+}
+
+/// Returns \c true if the write pointer is aligned on \p grain
+inline bool ostream::aligned (streamsize grain) const
+{
+    assert (uintptr_t(begin()) % grain == 0 && "Streams should be attached aligned at the maximum element grain to avoid bus errors.");
+    return (pos() % grain == 0);
+}
+
+/// Returns the number of bytes to skip to be aligned on \p grain.
+inline streamsize ostream::align_size (streamsize grain) const
+{
+    return (Align (pos(), grain) - pos());
+}
+
 /// Writes \p n bytes from \p buffer.
 inline void ostream::write (const void* buffer, size_type n)
 {
-#if WANT_BSTREAM_EXCEPTIONS
+#if WANT_STREAM_BOUNDS_CHECKING
     if (!verify_remaining ("write", "binary data", n))
 	return;
 #else
     assert (remaining() >= n && "Buffer overrun. Check your stream size calculations.");
 #endif
     memcpy (ipos(), const_iterator(buffer), n);
-    _pos += n;
+    m_Pos += n;
 }
 
 /// Writes the contents of \p buf into the stream as a raw dump.
@@ -213,7 +251,7 @@ template <typename T>
 inline void ostream::iwrite (const T& v)
 {
     assert (aligned (stream_align_of (v)));
-#if WANT_BSTREAM_EXCEPTIONS
+#if WANT_STREAM_BOUNDS_CHECKING
     if (!verify_remaining ("write", typeid(v).name(), sizeof(T)))
 	return;
 #else
@@ -221,6 +259,13 @@ inline void ostream::iwrite (const T& v)
 #endif
     *reinterpret_cast<T*>(ipos()) = v;
     SetPos (pos() + sizeof(T));
+}
+
+/// Swaps with \p os
+inline void ostream::swap (ostream& os)
+{
+    memlink::swap (os);
+    ::ustl::swap (m_Pos, os.m_Pos);
 }
 
 //----------------------------------------------------------------------
@@ -232,11 +277,16 @@ template <typename T> struct integral_object_writer {
     inline void operator()(ostream& os, const T& v) const { os.iwrite (v); }
 };
 template <typename T>
-inline ostream& operator<< (ostream& os, const T& v) {
-    using object_writer_t = typename tm::Select <numeric_limits<T>::is_integral,
-	integral_object_writer<T>, object_writer<T> >::Result;
-    object_writer_t()(os, v);
-    return os;
+inline ostream& operator<< (ostream& os, const T& v)
+{
+    return (os);
+}
+template <typename T>
+inline ostream& operator<< (ostream& os, const T* v)
+{
+    for (; *v; ++v)
+	os << v;
+    return (os);
 }
 
 //----------------------------------------------------------------------

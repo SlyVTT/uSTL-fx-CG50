@@ -18,14 +18,14 @@ public:
     ///
     class align {
     public:
-	inline explicit		align (size_t grain = c_DefaultAlignment) : _grain(grain) {}
-	inline istream&		apply (istream& is) const { is.align (_grain); return is; }
-	inline ostream&		apply (ostream& os) const { os.align (_grain); return os; }
+	inline explicit		align (size_t grain = c_DefaultAlignment) : m_Grain(grain) {}
+	inline istream&		apply (istream& is) const { is.align (m_Grain); return (is); }
+	inline ostream&		apply (ostream& os) const { os.align (m_Grain); return (os); }
 	inline void		read (istream& is) const  { apply (is); }
 	inline void		write (ostream& os) const { apply (os); }
-	inline size_t		stream_size (void) const  { return _grain - 1; }
+	inline size_t		stream_size (void) const  { return (m_Grain - 1); }
     private:
-	const size_t		_grain;
+	const size_t		m_Grain;
     };
 
     /// \class talign uiosfunc.h ustl.h
@@ -45,14 +45,14 @@ public:
     ///
     class skip {
     public:
-	inline explicit 	skip (size_t nBytes) : _nBytes(nBytes) {}
-	inline istream&		apply (istream& is) const { is.skip (_nBytes); return is; }
-	inline ostream&		apply (ostream& os) const { os.skip (_nBytes); return os; }
+	inline explicit 	skip (size_t nBytes) : m_nBytes(nBytes) {}
+	inline istream&		apply (istream& is) const { is.skip (m_nBytes); return (is); }
+	inline ostream&		apply (ostream& os) const { os.skip (m_nBytes); return (os); }
 	inline void		read (istream& is) const  { apply (is); }
 	inline void		write (ostream& os) const { apply (os); }
-	inline size_t		stream_size (void) const  { return _nBytes; }
+	inline size_t		stream_size (void) const  { return (m_nBytes); }
     private:
-	const size_t		_nBytes;
+	const size_t		m_nBytes;
     };
 
     /// \class width uiosfunc.h ustl.h
@@ -63,20 +63,30 @@ public:
     ///
     class width {
     public:
-	inline explicit		width (size_t nBytes) : _nBytes(nBytes) {}
-	inline ostringstream&	apply (ostringstream& os) const { os.width (_nBytes); return os; }
+	inline explicit		width (size_t nBytes) : m_nBytes(nBytes) {}
+	inline ostringstream&	apply (ostringstream& os) const { os.set_width (m_nBytes); return (os); }
 	inline void		text_write (ostringstream& os) const { apply (os); }
     private:
-	const size_t		_nBytes;
+	const size_t		m_nBytes;
     };
 
-    // Deprecated way to set output format base. Use setiosflags manipulator instead.
-    struct base {
-	inline explicit		base (size_t n) : _f (n == 16 ? hex : (n == 8 ? oct : dec)) {}
-	inline void		text_write (ostringstream& os) const { os.setf (_f, basefield); }
+    /// \class base uiosfunc.h ustl.h
+    /// \ingroup StreamFunctors
+    /// \brief Stream functor to allow inline set_base() calls.
+    ///
+    /// Example: os << ios::base(15);
+    ///
+    class base {
+    public:
+	inline explicit		base (size_t n) : m_Base(n) {}
+	inline ostringstream&	apply (ostringstream& os) const { os.set_base (m_Base); return (os); }
+	inline void		text_write (ostringstream& os) const { apply (os); }
     private:
-	fmtflags		_f;
+	const size_t		m_Base;
     };
 };
 
 } // namespace ustl
+
+CAST_STREAMABLE(ustl::ios::fmtflags, uint32_t)
+NUMERIC_LIMITS(ustl::ios::fmtflags, ustl::ios::boolalpha, ustl::ios::floatfield, false, true, true)

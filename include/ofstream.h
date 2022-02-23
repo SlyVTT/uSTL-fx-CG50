@@ -16,27 +16,22 @@ namespace ustl {
 class ofstream : public ostringstream {
 public:
 			ofstream (void);
-    explicit		ofstream (int ofd);
+    explicit		ofstream (int Fd);
     explicit		ofstream (const char* filename, openmode mode = out);
-    virtual		~ofstream (void) noexcept;
-    inline void		open (const char* filename, openmode mode = out) { _file.open (filename, mode); clear (_file.rdstate()); }
+    virtual	       ~ofstream (void) noexcept;
+    inline void		open (const char* filename, openmode mode = out) { m_File.open (filename, mode); clear (m_File.rdstate()); }
     void		close (void);
-    inline bool		is_open (void) const		{ return _file.is_open(); }
-    inline iostate	exceptions (iostate v)		{ ostringstream::exceptions(v); return _file.exceptions(v); }
-    inline void		setstate (iostate v)		{ ostringstream::setstate(v); _file.setstate(v); }
-    inline void		clear (iostate v = goodbit)	{ ostringstream::clear(v); _file.clear(v); }
-    inline off_t	tellp (void) const		{ return _file.tellp() + ostringstream::tellp(); }
-    inline int		fd (void) const			{ return _file.fd(); }
-    inline void		stat (struct stat& rs) const	{ _file.stat (rs); }
-    inline void		set_nonblock (bool v = true)	{ _file.set_nonblock (v); }
-    inline int		ioctl (const char* rname, int request, long argument = 0)	{ return _file.ioctl (rname, request, argument); }
-    inline int		ioctl (const char* rname, int request, int argument)		{ return _file.ioctl (rname, request, argument); }
-    inline int		ioctl (const char* rname, int request, void* argument)		{ return _file.ioctl (rname, request, argument); }
+    inline bool		is_open (void) const	{ return (m_File.is_open()); }
+    inline iostate	exceptions (iostate v)	{ ostringstream::exceptions(v); return (m_File.exceptions(v)); }
+    inline void		setstate (iostate v)	{ ostringstream::setstate(v); m_File.setstate(v); }
+    inline void		clear (iostate v = goodbit)	{ ostringstream::clear(v); m_File.clear(v); }
+    inline off_t	tellp (void) const		{ return (m_File.tellp() + ostringstream::tellp()); }
+    inline int		fd (void) const			{ return (m_File.fd()); }
     ofstream&		seekp (off_t p, seekdir d = beg);
-    virtual ostream&	flush (void) override;
-    virtual size_type	overflow (size_type n = 1) override;
+    ofstream&		flush (void);
+    virtual size_type	overflow (size_type n = 1);
 private:
-    fstream		_file;
+    fstream		m_File;
 };
 
 /// \class ifstream fdostream.h ustl.h
@@ -45,29 +40,22 @@ private:
 class ifstream : public istringstream {
 public:
 			ifstream (void);
-    explicit		ifstream (int ifd);
+    explicit		ifstream (int Fd);
     explicit		ifstream (const char* filename, openmode mode = in);
-    inline void		open (const char* filename, openmode mode = in)	{ _file.open (filename, mode); clear (_file.rdstate()); }
-    inline void		close (void)			{ _file.close(); clear (_file.rdstate()); }
-    inline bool		is_open (void) const		{ return _file.is_open(); }
-    inline iostate	exceptions (iostate v)		{ istringstream::exceptions(v); return _file.exceptions(v); }
-    inline void		setstate (iostate v)		{ istringstream::setstate(v); _file.setstate(v); }
-    inline void		clear (iostate v = goodbit)	{ istringstream::clear(v); _file.clear(v); }
-    inline off_t	tellg (void) const		{ return _file.tellg() - remaining(); }
-    inline int		fd (void) const			{ return _file.fd(); }
-    inline void		stat (struct stat& rs) const	{ _file.stat (rs); }
-    inline void		set_nonblock (bool v = true)	{ _file.set_nonblock (v); }
-    void		set_buffer_size (size_type sz);
-    ifstream&		putback (char c)		{ ungetc(); _buffer[pos()] = c; return *this; }
-    inline int		ioctl (const char* rname, int request, long argument = 0)	{ return _file.ioctl (rname, request, argument); }
-    inline int		ioctl (const char* rname, int request, int argument)		{ return _file.ioctl (rname, request, argument); }
-    inline int		ioctl (const char* rname, int request, void* argument)		{ return _file.ioctl (rname, request, argument); }
+    inline void		open (const char* filename, openmode mode = in)	{ m_File.open (filename, mode); clear (m_File.rdstate()); }
+    inline void		close (void)		{ m_File.close(); clear (m_File.rdstate()); }
+    inline bool		is_open (void) const	{ return (m_File.is_open()); }
+    inline iostate	exceptions (iostate v)	{ istringstream::exceptions(v); return (m_File.exceptions(v)); }
+    inline void		setstate (iostate v)	{ istringstream::setstate(v); m_File.setstate(v); }
+    inline void		clear (iostate v = goodbit)	{ istringstream::clear(v); m_File.clear(v); }
+    inline off_t	tellg (void) const		{ return (m_File.tellg() - remaining()); }
+    inline int		fd (void) const			{ return (m_File.fd()); }
     ifstream&		seekg (off_t p, seekdir d = beg);
     int			sync (void);
-    virtual size_type	underflow (size_type n = 1) override;
+    virtual size_type	underflow (size_type n = 1);
 private:
-    string		_buffer;
-    fstream		_file;
+    string		m_Buffer;
+    fstream		m_File;
 };
 
 extern ofstream cout, cerr;

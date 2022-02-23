@@ -13,7 +13,6 @@
 #include "ustl/unumeric.h"
 #include "ustl/ulist.h"
 #include "ustl/uheap.h"
-#include "ustl/ustdxept.h"
 
 /// \mainpage
 ///
